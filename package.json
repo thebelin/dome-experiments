@@ -1,0 +1,29 @@
+{
+  "name": "dome-experiments",
+  "version": "1.0.0",
+  "description": "![alt text][logo]",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thebelin/dome-experiments.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thebelin/dome-experiments/issues"
+  },
+  "homepage": "https://github.com/thebelin/dome-experiments#readme",
+  "dependencies": {
+    "async": "^2.5.0",
+    "express": "^4.16.1",
+    "morgan": "^1.9.0",
+    "opencv": "^6.0.0",
+    "path": "^0.12.7",
+    "socket.io": "^2.0.3"
+  },
+  "httpPort": 8080,
+  "staticFolder": "./"
+}
