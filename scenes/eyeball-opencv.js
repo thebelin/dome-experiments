@@ -1,5 +1,16 @@
+// MODIFY THIS TO THE APPROPRIATE URL IF IT IS NOT BEING RUN LOCALLY
+var socket = io.connect('http://localhost:8080');
+
+var canvas = document.getElementById('canvas-video');
+var context = canvas.getContext('2d');
+var img = new Image();
+
+// show loading notice for the facial detection preview module
+context.fillStyle = '#333';
+context.fillText('Loading...', canvas.width/2-30, canvas.height/3);
+hideHelp();
 function setupScene(scene) {
-    alert("Eye shader by iq (CC-BY-NC-SA 3.0)");
+    //alert("Eye shader by iq (CC-BY-NC-SA 3.0)");
 
     var scene = sphericalDisplayReferenceFrame(scene);
     
@@ -35,17 +46,50 @@ function setupScene(scene) {
             displayInteractionUrl("dome.marciot.com/interact" + interact.getUrlSuffix());
         }
     }
-    var interact = new DomeInteraction(id => new MyParticipant(scene, eye), stateChanged);
+    console.log("start interact");
+
+    // Pass the socket instance to the Participant class
+    new MyParticipant(scene, eye, socket, img, context);
 }
 
 var controllingParticipant = null;
 
-class MyParticipant extends DomeParticipant {
-    constructor(scene, eye) {
-        super();
+class MyParticipant {
+    constructor(scene, eye, socket, img, context) {
+        console.log("start Participant");
+        // super();
         this.scene = scene;
         this.eye   = eye;
+        this.center = {x:0,y:0};
         controllingParticipant = this;
+        // React to the socket.io data about face detection
+        var self = this;
+        console.log("start Participant");
+        socket.on('frame', function (data) {
+            if (data.face && data.face.cascade) {
+                // The captured face data is 320 x 240 resolution
+                // the x/y is distance from top left to top left of rectangle
+                // the camera mirrors the data
+                // Get the centerpoint of the first face detected, expressed as a percentage
+                self.center = {
+                    x: ((data.face.cascade.x + (data.face.cascade.width / 2)) - 160) / 160,
+                    y: ((data.face.cascade.y + (data.face.cascade.height / 2)) - 120) / -120
+                };
+                
+                console.log ('face', self.center);
+            }
+            // Draw the output of the opencv face detection to the display canvas
+            img.onload = function () {
+                context.drawImage(this, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = 'data:image/png;base64,' + btoa(String.fromCharCode.apply(null,  new Uint8Array(data.buffer)));
+        });
+
+        // fake an animation controller
+        setInterval(function () {
+            self.eye.rotation.y = THREE.Math.lerp(self.eye.rotation.y, self.center.x, .01);
+            self.eye.rotation.x = THREE.Math.lerp(self.eye.rotation.x, self.center.y, .01);
+        }, 10);
     }
 
     disconnected() {
@@ -62,7 +106,8 @@ class MyParticipant extends DomeParticipant {
         if(this !== controllingParticipant) {
             return;
         }
-        this.eye.quaternion.copy(getSphericalDisplayQuaternion(this.scene, e));
+        //console.log('pointer', e);
+        //this.eye.quaternion.copy(getSphericalDisplayQuaternion(this.scene, e));
     }
 
     animate(t, dt) {
@@ -126,7 +171,7 @@ float fbm(in vec2 p)
 vec4 getProceduralMap( in vec2 uv )
 {
     float pi            = 3.1415;
-    float irisCoverage  = 0.15;
+    float irisCoverage  = 0.25;
     
     float r = uv.y*1.0/irisCoverage;
     float a = uv.x * pi * 2.0;
@@ -134,7 +179,7 @@ vec4 getProceduralMap( in vec2 uv )
 
     //change this to whatever you want the background
     //color to be
-    vec3 bg_col = vec3(1.0);
+    vec3 bg_col = vec3(0.0);
 
     vec3 col = bg_col;
 
@@ -144,14 +189,14 @@ vec4 getProceduralMap( in vec2 uv )
 
     if (r < 0.8) {
         // Outer iris, color variation
-        col = vec3(0.0, 0.3, 0.4);
+        col = vec3(0.9, 0.1, 0.2);
 
         float f = fbm(5.0*p);
         col = mix(col, vec3(0.2, 0.5, 0.4), f);
 
         // Central iris
         f = 1.0 - smoothstep(0.2, 0.5, r);
-        col = mix(col, vec3(0.9, 0.6, 0.2), f);
+        col = mix(col, vec3(1.0, 0.3, 0.1), f);
 
         a += 0.05*fbm(20.0*p);
 
@@ -176,7 +221,7 @@ vec4 getProceduralMap( in vec2 uv )
         col = mix(col, bg_col, f);
     } else {
         // Veins
-        a += 0.15*fbm(10.0*p);
+        a += 0.55*fbm(10.0*p);
         
         float f = smoothstep(0.65, 1.0, fbm(vec2(0.5*r, 30.0*a)));
         col -= vec3(0.0,1.0,1.0) * (1.0 - uv.y) * f;
