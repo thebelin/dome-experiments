@@ -1,3 +1,6 @@
+// MODIFY THIS TO THE APPROPRIATE URL IF IT IS NOT BEING RUN LOCALLY
+var socket = io.connect('http://localhost:8080');
+
 function setupScene(scene) {
     alert("Eye shader by iq (CC-BY-NC-SA 3.0)");
 
@@ -35,17 +38,23 @@ function setupScene(scene) {
             displayInteractionUrl("dome.marciot.com/interact" + interact.getUrlSuffix());
         }
     }
-    var interact = new DomeInteraction(id => new MyParticipant(scene, eye), stateChanged);
+    var interact = new DomeInteraction(id => new MyParticipant(scene, eye, socket), stateChanged);
 }
 
 var controllingParticipant = null;
 
 class MyParticipant extends DomeParticipant {
-    constructor(scene, eye) {
+    constructor(scene, eye, socket) {
         super();
         this.scene = scene;
         this.eye   = eye;
         controllingParticipant = this;
+        // React to the socket.io data about face detection
+        socket.on('frame', function (data) {
+            if (data.face) {
+                console.log ('face', data.face);
+            }
+        });        
     }
 
     disconnected() {
