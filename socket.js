@@ -1,19 +1,20 @@
-const async = require('async');
-const cv = require('opencv');
+// modules
+const async = require('async'),
+  cv = require('opencv');
 
 // camera properties
-const camWidth = 400;
-const camHeight = 300;
-const camFps = 10;
-const camInterval = 1000 / camFps;
+const camWidth = 320,
+  camHeight = 240,
+  camFps = 10,
+  camInterval = 1000 / camFps;
 
 // Set an object of routines to run on the captured data
 const routines = {
   // Cascade (uses all the facial detection routines in a cascade until something is returned)
-  face: {
+  cascade: {
     path: cv.FACE_CASCADE,
-    rectColor: [255, 255, 255],
-    rectThickness: 1,
+    rectColor: [0, 255, 0],
+    rectThickness: 2,
   }
 };
 

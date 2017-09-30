@@ -1,6 +1,14 @@
 // MODIFY THIS TO THE APPROPRIATE URL IF IT IS NOT BEING RUN LOCALLY
 var socket = io.connect('http://localhost:8080');
 
+var canvas = document.getElementById('canvas-video');
+var context = canvas.getContext('2d');
+var img = new Image();
+
+// show loading notice for the facial detection preview module
+context.fillStyle = '#333';
+context.fillText('Loading...', canvas.width/2-30, canvas.height/3);
+
 function setupScene(scene) {
     alert("Eye shader by iq (CC-BY-NC-SA 3.0)");
 
@@ -38,22 +46,41 @@ function setupScene(scene) {
             displayInteractionUrl("dome.marciot.com/interact" + interact.getUrlSuffix());
         }
     }
-    var interact = new DomeInteraction(id => new MyParticipant(scene, eye, socket), stateChanged);
+
+    // Pass the socket instance to the Participant class
+    var interact = new DomeInteraction(id => new MyParticipant(scene, eye, socket, img, context), stateChanged);
 }
 
 var controllingParticipant = null;
 
 class MyParticipant extends DomeParticipant {
-    constructor(scene, eye, socket) {
+    constructor(scene, eye, socket, img, context) {
         super();
         this.scene = scene;
         this.eye   = eye;
         controllingParticipant = this;
         // React to the socket.io data about face detection
+        var self = this;
         socket.on('frame', function (data) {
-            if (data.face) {
-                console.log ('face', data.face);
+            if (data.face && data.face.cascade) {
+                // The captured face data is 320 x 240 resolution
+                // the x/y is distance from top left to top left of rectangle
+                // the camera mirrors the data
+                // Get the centerpoint of the first face detected, expressed as a percentage
+                var center = {
+                    x: ((data.face.cascade.x + (data.face.cascade.width / 2)) - 160) / -320,
+                    y: ((data.face.cascade.y + (data.face.cascade.height / 2)) - 120) / -240
+                };
+                
+                //@todo: Create a rotation setting reflecting the center percentages and apply it to the eyeball
+                //
+                console.log ('face', center, data.face.cascade);
             }
+            // Draw the output of the opencv face detection to the display canvas
+            img.onload = function () {
+                context.drawImage(this, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = 'data:image/png;base64,' + btoa(String.fromCharCode.apply(null,  new Uint8Array(data.buffer)));
         });        
     }
 
@@ -71,6 +98,7 @@ class MyParticipant extends DomeParticipant {
         if(this !== controllingParticipant) {
             return;
         }
+        //console.log('pointer', e);
         this.eye.quaternion.copy(getSphericalDisplayQuaternion(this.scene, e));
     }
 

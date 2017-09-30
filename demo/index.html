@@ -46,6 +46,13 @@
             #help button {
                 margin-left: 2em;
             }
+            #canvas-video {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                width: 200px;
+                height: 150px;
+            }
         </style>
         <div id="help" class="box no-select">
             <button onClick="hideHelp()" class="float-right">Hide</button>
@@ -98,5 +105,6 @@
         </script>
     </head>
     <body onLoad="startAnimation()">
+    <canvas id="canvas-video" width="400" height="300"></canvas>
     </body>
 </html>
