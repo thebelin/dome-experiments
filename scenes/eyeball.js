@@ -58,6 +58,7 @@ class MyParticipant extends DomeParticipant {
         super();
         this.scene = scene;
         this.eye   = eye;
+        this.center = {x:0,y:0};
         controllingParticipant = this;
         // React to the socket.io data about face detection
         var self = this;
@@ -67,13 +68,11 @@ class MyParticipant extends DomeParticipant {
                 // the x/y is distance from top left to top left of rectangle
                 // the camera mirrors the data
                 // Get the centerpoint of the first face detected, expressed as a percentage
-                var center = {
+                self.center = {
                     x: ((data.face.cascade.x + (data.face.cascade.width / 2)) - 160) / 320,
                     y: ((data.face.cascade.y + (data.face.cascade.height / 2)) - 120) / -240
                 };
                 
-                self.eye.rotation.y = THREE.Math.lerp(self.eye.rotation.y, center.x, .05);
-                self.eye.rotation.x = THREE.Math.lerp(self.eye.rotation.x, center.y -1, .05);
                 // console.log ('face', center);
             }
             // Draw the output of the opencv face detection to the display canvas
@@ -81,7 +80,13 @@ class MyParticipant extends DomeParticipant {
                 context.drawImage(this, 0, 0, canvas.width, canvas.height);
             };
             img.src = 'data:image/png;base64,' + btoa(String.fromCharCode.apply(null,  new Uint8Array(data.buffer)));
-        });        
+        });
+
+        // fake an animation controller
+        setInterval(function () {
+            self.eye.rotation.y = THREE.Math.lerp(self.eye.rotation.y, self.center.x, .01);
+            self.eye.rotation.x = THREE.Math.lerp(self.eye.rotation.x, self.center.y -1, .01);
+        }, 10);
     }
 
     disconnected() {
@@ -163,7 +168,7 @@ float fbm(in vec2 p)
 vec4 getProceduralMap( in vec2 uv )
 {
     float pi            = 3.1415;
-    float irisCoverage  = 0.15;
+    float irisCoverage  = 0.08;
     
     float r = uv.y*1.0/irisCoverage;
     float a = uv.x * pi * 2.0;
