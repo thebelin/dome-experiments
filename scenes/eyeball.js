@@ -72,12 +72,9 @@ class MyParticipant extends DomeParticipant {
                     y: ((data.face.cascade.y + (data.face.cascade.height / 2)) - 120) / -240
                 };
                 
-                // Create a rotation setting reflecting the center percentages and apply it to the eyeball
-                var rot = new THREE.Quaternion();
-                rot.setFromAxisAngle( new THREE.Vector3( center.x * 100, 1, center.y * 100 ), Math.PI / 2 );
-
-                self.eye.quaternion.copy(rot);
-                console.log ('face', center, rot);
+                self.eye.rotateZ(center.x);
+                // self.eye.rotateX(center.y);
+                console.log ('face', center);
             }
             // Draw the output of the opencv face detection to the display canvas
             img.onload = function () {
@@ -102,7 +99,7 @@ class MyParticipant extends DomeParticipant {
             return;
         }
         //console.log('pointer', e);
-        this.eye.quaternion.copy(getSphericalDisplayQuaternion(this.scene, e));
+        //this.eye.quaternion.copy(getSphericalDisplayQuaternion(this.scene, e));
     }
 
     animate(t, dt) {
