@@ -1,7 +1,13 @@
 ![alt text][logo]
 
-THREE.js Dome Experiments
+Belin's Fork Of Marcoit's THREE.js Dome Experiments
 =========================
+## Setup for node.js server with socket.io extension
+* Install Python 2.7
+* Install OpenCV
+* Install Node.js
+* npm install within project folder
+* recommend use of domemon for editing and monitor during dev
 
 This repository code for building THREE.js content for dome theaters and virtual reality. This project is an outgrowth of my participation in [DomeLab].
 
