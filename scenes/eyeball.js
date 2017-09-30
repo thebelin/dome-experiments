@@ -46,22 +46,25 @@ function setupScene(scene) {
             displayInteractionUrl("dome.marciot.com/interact" + interact.getUrlSuffix());
         }
     }
+    console.log("start interact");
 
     // Pass the socket instance to the Participant class
-    var interact = new DomeInteraction(id => new MyParticipant(scene, eye, socket, img, context), stateChanged);
+    new MyParticipant(scene, eye, socket, img, context);
 }
 
 var controllingParticipant = null;
 
-class MyParticipant extends DomeParticipant {
+class MyParticipant {
     constructor(scene, eye, socket, img, context) {
-        super();
+        console.log("start Participant");
+        // super();
         this.scene = scene;
         this.eye   = eye;
         this.center = {x:0,y:0};
         controllingParticipant = this;
         // React to the socket.io data about face detection
         var self = this;
+        console.log("start Participant");
         socket.on('frame', function (data) {
             if (data.face && data.face.cascade) {
                 // The captured face data is 320 x 240 resolution
@@ -69,11 +72,11 @@ class MyParticipant extends DomeParticipant {
                 // the camera mirrors the data
                 // Get the centerpoint of the first face detected, expressed as a percentage
                 self.center = {
-                    x: ((data.face.cascade.x + (data.face.cascade.width / 2)) - 160) / 320,
-                    y: ((data.face.cascade.y + (data.face.cascade.height / 2)) - 120) / -240
+                    x: ((data.face.cascade.x + (data.face.cascade.width / 2)) - 160) / 160,
+                    y: ((data.face.cascade.y + (data.face.cascade.height / 2)) - 120) / -120
                 };
                 
-                // console.log ('face', center);
+                console.log ('face', self.center);
             }
             // Draw the output of the opencv face detection to the display canvas
             img.onload = function () {
@@ -85,7 +88,7 @@ class MyParticipant extends DomeParticipant {
         // fake an animation controller
         setInterval(function () {
             self.eye.rotation.y = THREE.Math.lerp(self.eye.rotation.y, self.center.x, .01);
-            self.eye.rotation.x = THREE.Math.lerp(self.eye.rotation.x, self.center.y -1, .01);
+            self.eye.rotation.x = THREE.Math.lerp(self.eye.rotation.x, self.center.y, .01);
         }, 10);
     }
 
@@ -168,7 +171,7 @@ float fbm(in vec2 p)
 vec4 getProceduralMap( in vec2 uv )
 {
     float pi            = 3.1415;
-    float irisCoverage  = 0.08;
+    float irisCoverage  = 0.25;
     
     float r = uv.y*1.0/irisCoverage;
     float a = uv.x * pi * 2.0;
