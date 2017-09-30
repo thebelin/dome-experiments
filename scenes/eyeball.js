@@ -8,9 +8,9 @@ var img = new Image();
 // show loading notice for the facial detection preview module
 context.fillStyle = '#333';
 context.fillText('Loading...', canvas.width/2-30, canvas.height/3);
-
+hideHelp();
 function setupScene(scene) {
-    alert("Eye shader by iq (CC-BY-NC-SA 3.0)");
+    //alert("Eye shader by iq (CC-BY-NC-SA 3.0)");
 
     var scene = sphericalDisplayReferenceFrame(scene);
     
@@ -68,13 +68,13 @@ class MyParticipant extends DomeParticipant {
                 // the camera mirrors the data
                 // Get the centerpoint of the first face detected, expressed as a percentage
                 var center = {
-                    x: ((data.face.cascade.x + (data.face.cascade.width / 2)) - 160) / -320,
+                    x: ((data.face.cascade.x + (data.face.cascade.width / 2)) - 160) / 320,
                     y: ((data.face.cascade.y + (data.face.cascade.height / 2)) - 120) / -240
                 };
                 
-                self.eye.rotateZ(center.x);
-                // self.eye.rotateX(center.y);
-                console.log ('face', center);
+                self.eye.rotation.y = THREE.Math.lerp(self.eye.rotation.y, center.x, .05);
+                self.eye.rotation.x = THREE.Math.lerp(self.eye.rotation.x, center.y -1, .05);
+                // console.log ('face', center);
             }
             // Draw the output of the opencv face detection to the display canvas
             img.onload = function () {
@@ -171,7 +171,7 @@ vec4 getProceduralMap( in vec2 uv )
 
     //change this to whatever you want the background
     //color to be
-    vec3 bg_col = vec3(1.0);
+    vec3 bg_col = vec3(0.9);
 
     vec3 col = bg_col;
 
